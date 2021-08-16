@@ -1,0 +1,7 @@
+---
+output:
+  html_document: default
+---
+
+![](`r 'www/encabezado.png'`)
+
