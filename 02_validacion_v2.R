@@ -7,7 +7,8 @@ cat('\014')
 #===============================================================================
 # CARGA DEL ARCHIVO CON LAS PLACAS A VALIDAR
 #===============================================================================
-PLACA <- read_dta('ERROR_Validacion_670001-680000.dta')
+RANGO <- '670001-680000'
+PLACA <- read_dta(paste0('ERROR_Validacion_',RANGO,'.dta'))
 #===============================================================================
 # ANALISIS DE LA BASE
 # PLACA <- PLACA %>%
@@ -150,9 +151,9 @@ system("taskkill /im java.exe /f", intern = F, ignore.stdout = F)
 #===============================================================================
 #save(BASE_TENENCIA, file = 'Validacion_Placa_Tenencia_1-100.rda')
 BASE_TENENCIA <- filter(BASE_TENENCIA, estatus != 'ERROR. Revisar Placa')
-write.csv(BASE_TENENCIA,'CORRECCION_Placa_Tenencia_670001-680000.csv',row.names = F,fileEncoding = 'Latin1')
+write.csv(BASE_TENENCIA,paste0('CORRECCION_Placa_Tenencia_',RANGO,'_parte2.csv'),row.names = F,fileEncoding = 'Latin1')
 #===============================================================================
 PLACA <- anti_join(PLACA, BASE_TENENCIA, by = 'placa')
-write_dta(PLACA,'ERROR_Validacion_670001-680000.dta',version = 14L)
+write_dta(PLACA,paste0('ERROR_Validacion_',RANGO,'.dta'),version = 14L)
 
 
