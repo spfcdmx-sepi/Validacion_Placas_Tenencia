@@ -4,12 +4,14 @@ library(tidyverse)
 library(haven)
 cat('\014')
 
-RANGO <- '670001-680000'
+RANGO <- '3020001-3030000'
 
 ERRORES <- fread(paste0('Validacion_Placa_Tenencia_',RANGO,'.csv'),
-                 sep = ',',
-                 showProgress = T,
-                 encoding = 'Latin-1')
+                 encoding = 'UTF-8')
+
+ESTATUS <- ERRORES %>%
+  group_by(estatus) %>%
+  tally(name = 'obs')
 
 ERRORES <- filter(ERRORES, estatus == 'ERROR. Revisar Placa')
 

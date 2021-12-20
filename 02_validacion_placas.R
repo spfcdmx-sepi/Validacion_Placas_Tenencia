@@ -2,24 +2,21 @@ rm(list = ls())
 library(pacman)
 p_load(RSelenium,
        tidyverse,
+       lubridate,
        haven)
 cat('\014')
 #===============================================================================
 # CARGA DEL ARCHIVO CON LAS PLACAS A VALIDAR
 #===============================================================================
-RANGO <- '670001-680000'
-PLACA <- read_dta(paste0('ERROR_Validacion_',RANGO,'.dta'))
+PLACA <- read_dta('Bases/PLACA_auxiliares_tenencia_15-21.dta')
 #===============================================================================
 # ANALISIS DE LA BASE
-# PLACA <- PLACA %>%
-#   rename(placa = nplaca) %>%
-#   mutate(nplaca = nchar(placa))
-#-------------------------------------------------------------------------------
-# PLACA <- filter(PLACA, nplaca >= 2)
-# PLACA <- slice(PLACA, 4000000:nrow(PLACA))
-# write_dta(PLACA,'PLACA_auxiliares_MacBook.dta',version = 14L)
+PLACA <- PLACA %>%
+  rename(placa = nplaca) %>%
+  mutate(nplaca = nchar(placa)) %>%
+  filter(nplaca >= 2)
 #===============================================================================
-# E UTILIZA EL NAVEGADOR FIREFOX
+# SE UTILIZA EL NAVEGADOR FIREFOX
 system("taskkill /im java.exe /f", intern=FALSE, ignore.stdout=FALSE)
 #-------------------------------------------------------------------------------
 profile <- makeFirefoxProfile(list(browser.download.folderList = 2L,
@@ -28,23 +25,26 @@ profile <- makeFirefoxProfile(list(browser.download.folderList = 2L,
                                    browser.helperApps.neverAsk.saveToDisk = 'text/plain'))
 #-------------------------------------------------------------------------------
 rD <- RSelenium::rsDriver(browser = 'firefox',
-                          port = 4444L,
+                          port = 4445L,
                           verbose = F,
                           extraCapabilities = profile)
 #-------------------------------------------------------------------------------
 remDr <- rD[['client']]
 remDr$navigate('https://data.finanzas.cdmx.gob.mx/consultas_pagos/consulta_adeudosten')
 #-------------------------------------------------------------------------------
+ini <- 1
+fin <- 4011670
+#-------------------------------------------------------------------------------
 BASE_TENENCIA <- NULL
 l <- nrow(PLACA)
 tiempo = proc.time()
-for (i in 1:l) {
+for (i in ini:fin) {
   
   Sys.sleep(1)
   remDr$findElement(using = 'id', value = 'inputPlaca')$sendKeysToElement(list(PLACA$placa[i]))
   Sys.sleep(1)
   remDr$findElements(using = 'xpath', "//*/button[@class = 'btn btn-cdmx']")[[1]]$clickElement()
-  Sys.sleep(9)
+  Sys.sleep(5)
   
   # ESTATUS: Sin adeudos
   ESTATUS_1 <- remDr$findElements(using = 'xpath', '//*[@id="lbl_sin_adeudos"]/p')[[1]]$getElementText()[[1]]
@@ -135,12 +135,12 @@ for (i in 1:l) {
                          years = YEARS)
   
   BASE_TENENCIA <- rbind(BASE_TENENCIA, AUX_BASE)
-  
   print(paste0('Placa ',i,': ',PLACA$placa[i],'. Validada'))
-  #remDr$findElement(using = 'id', value = 'inputPlaca')$clearElement()
+
   remDr$navigate('https://data.finanzas.cdmx.gob.mx/consultas_pagos/consulta_adeudosten')
   Sys.sleep(5)
   
+  fwrite(BASE_TENENCIA,paste0('Validacion_Placa_Tenencia_',ini,'-',fin,'.csv'),row.names = F)
   rm(ESTATUS, ADEUDOS, YEARS)
   
 }
@@ -149,11 +149,5 @@ proc.time()-tiempo
 remDr$quit()
 system("taskkill /im java.exe /f", intern = F, ignore.stdout = F)
 #===============================================================================
-#save(BASE_TENENCIA, file = 'Validacion_Placa_Tenencia_1-100.rda')
-BASE_TENENCIA <- filter(BASE_TENENCIA, estatus != 'ERROR. Revisar Placa')
-write.csv(BASE_TENENCIA,paste0('CORRECCION_Placa_Tenencia_',RANGO,'_parte2.csv'),row.names = F,fileEncoding = 'Latin1')
-#===============================================================================
-PLACA <- anti_join(PLACA, BASE_TENENCIA, by = 'placa')
-write_dta(PLACA,paste0('ERROR_Validacion_',RANGO,'.dta'),version = 14L)
 
 

@@ -4,26 +4,28 @@ library(tidyverse)
 library(haven)
 cat('\014')
 
-RANGO <- '670001-680000'
+RANGO <- '3020001-3023000'
 
 VALIDACION <- fread(paste0('Validacion_Placa_Tenencia_',RANGO,'.csv'),
-                    sep = ',',
-                    encoding = 'Latin-1',
-                    showProgress = T)
+                    encoding = 'UTF-8')
 
 CORRECCIONES <- fread(paste0('CORRECCION_Placa_Tenencia_',RANGO,'.csv'),
                       sep = ',',
-                      encoding = 'Latin-1',
-                      showProgress = T)
+                      encoding = 'UTF-8')
 
 VALIDACION <- filter(VALIDACION, estatus != 'ERROR. Revisar Placa')
 
+VALIDACION_PLACA <- VALIDACION
 VALIDACION_PLACA <- rbind(VALIDACION, CORRECCIONES)
+
+ESTATUS <- VALIDACION_PLACA %>%
+  group_by(estatus) %>%
+  tally(name = 'obs')
 
 PLACAS <- VALIDACION_PLACA %>%
   group_by(placa) %>%
   tally(name = 'obs')
 
-save(VALIDACION_PLACA,file = paste0('Resultados_Validacion_NewVersion//Validacion_Placa_',RANGO,'.rda'))
+save(VALIDACION_PLACA,file = paste0('Validacion_Placa_',RANGO,'.rda'))
 
 
