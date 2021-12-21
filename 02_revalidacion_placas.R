@@ -36,7 +36,7 @@ for (i in 1:l) {
   remDr$findElement(using = 'id', value = 'inputPlaca')$sendKeysToElement(list(PLACA$placa[i]))
   Sys.sleep(1)
   remDr$findElements(using = 'xpath', "//*/button[@class = 'btn btn-cdmx']")[[1]]$clickElement()
-  Sys.sleep(3)
+  Sys.sleep(5)
   
   # ESTATUS: Sin adeudos
   ESTATUS_1 <- remDr$findElements(using = 'xpath', '//*[@id="lbl_sin_adeudos"]/p')[[1]]$getElementText()[[1]]
@@ -143,7 +143,7 @@ remDr$quit()
 system("taskkill /im java.exe /f", intern = F, ignore.stdout = F)
 #===============================================================================
 BASE_TENENCIA <- filter(BASE_TENENCIA, estatus != 'ERROR. Revisar Placa')
-fwrite(BASE_TENENCIA, paste0('CORRECCION_Placa_Tenencia_',RANGO,'_parte1.csv'))
+fwrite(BASE_TENENCIA, paste0('CORRECCION_Placa_Tenencia_',RANGO,'_parte3.csv'))
 #===============================================================================
 PLACA <- anti_join(PLACA, BASE_TENENCIA, by = 'placa')
 write_dta(PLACA,paste0('ERROR_Validacion_',RANGO,'.dta'),version = 14L)

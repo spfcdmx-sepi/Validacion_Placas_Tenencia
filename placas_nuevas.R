@@ -1,7 +1,6 @@
 rm(list = ls())
 library(pacman)
-p_load(RSelenium,
-       tidyverse,
+p_load(tidyverse,
        haven,
        data.table)
 cat('\014')
@@ -15,11 +14,12 @@ PLACA <- read_dta('Bases/PLACA_auxiliares_tenencia_15-21.dta') %>%
 #-------------------------------------------------------------------------------
 # CARGA DE LAS PLACAS VALIDADAS
 #-------------------------------------------------------------------------------
-load('Bases/Validacion_Placas_Auxiliar-2021.rda')
+VALIDACION <- fread('Bases/Placas_Validadas_Auxiliar-Tenencia_2014-22Nov21_16Dec21.csv',
+                    encoding = 'UTF-8')
 #-------------------------------------------------------------------------------
 # CARGA DEL AUXILIAR DE TENENCIA PARA VER LAS PLACAS NUEVAS
 #-------------------------------------------------------------------------------
-AUXILIAR <- fread('Bases/auxiliar_tenencia_01Ene21-22Nov21.txt',
+AUXILIAR <- fread('Bases/auxiliar_tenencia_01Ene21-20Dic21.txt',
                   sep = '|',
                   encoding = 'UTF-8')
 PCANCL <- AUXILIAR %>%
@@ -39,7 +39,8 @@ AUXILIAR <- AUXILIAR %>%
 PLACAS_NUEVAS <- anti_join(AUXILIAR, PLACA, by = 'placa')
 PLACAS_NUEVAS <- anti_join(PLACAS_NUEVAS, VALIDACION, by = 'placa') %>%
   arrange(placa)
+PLACAS_NUEVAS <- dplyr::select(PLACAS_NUEVAS, placa)
 #-------------------------------------------------------------------------------
-write_dta(PLACAS_NUEVAS,'Placas_Nuevas_Tenencia_01Ene21-22Nov21.dta', version = 14L)
+write_dta(PLACAS_NUEVAS,'Placas_Nuevas_Tenencia_01Ene21-20Dic21.dta', version = 14L)
 
 
